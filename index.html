@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Painel de Compras — Moutinho</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+:root{
+  --red:#E31E24; --red-dark:#B8171C;
+  --black:#0A0A0A;
+  --gray-bg:#F7F7F8; --gray-bg2:#F0F0F2; --gray-border:#E7E7EA;
+  --gray-txt:#8A8A8E; --gray-txt2:#ABABB2;
+  --white:#FFFFFF;
+  --green:#1FAA59; --green-bg:#E9F8EF;
+  --blue:#2E7DD1; --blue-bg:#EAF3FC;
+  --amber:#C9911A; --amber-bg:#FDF3DD;
+  --orange:#D9711F; --orange-bg:#FCEBDD;
+  --crit:#D93A3A; --crit-bg:#FCE8E8;
+  --radius:14px; --radius-sm:9px;
+  --shadow:0 1px 2px rgba(10,10,10,.04), 0 6px 20px rgba(10,10,10,.05);
+  --shadow-sm:0 1px 2px rgba(10,10,10,.05);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{overflow-x:hidden;}
+body{max-width:100%; overflow-x:hidden; min-height:100vh;}
+body{
+  font-family:'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background:var(--gray-bg); color:var(--black);
+  -webkit-font-smoothing:antialiased;
+}
+::-webkit-scrollbar{height:6px; width:6px;}
+::-webkit-scrollbar-thumb{background:var(--gray-border); border-radius:10px;}
+
+/* ---------- Topbar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:50;
+  background:var(--white); border-bottom:1px solid var(--gray-border);
+}
+.topbar-accent{
+  height:3px; width:100%;
+  background:linear-gradient(90deg, var(--red) 0%, #ff6b6f 50%, var(--red) 100%);
+}
+.topbar-inner{
+  max-width:1240px; margin:0 auto; padding:16px 24px;
+  display:flex; align-items:center; gap:14px;
+}
+.topbar-left{display:flex; align-items:center; gap:14px;}
+.topbar img{height:36px; display:block;}
+.topbar-title{text-align:left;}
+.topbar-title b{font-size:19px; font-weight:800; letter-spacing:-.015em;}
+.topbar-title span{display:none;}
+.topbar-right{margin-left:auto; justify-self:end; display:flex; align-items:center; gap:10px;}
+.badge-live{
+  display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700;
+  color:var(--green); background:var(--green-bg); padding:5px 10px; border-radius:100px;
+}
+.badge-live .dot{width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.35;}}
+
+/* ---------- Page nav ---------- */
+.pagenav{
+  max-width:1240px; margin:0 auto; padding:0 24px 2px; display:flex; gap:6px;
+  overflow-x:auto; -ms-overflow-style:none; scrollbar-width:none;
+}
+.pagenav::-webkit-scrollbar{display:none;}
+.pagenav button{
+  border:none; background:transparent; padding:11px 14px; margin-right:2px;
+  font-family:inherit; font-size:14px; font-weight:700; color:var(--gray-txt);
+  cursor:pointer; white-space:nowrap; border-bottom:2.5px solid transparent;
+  border-radius:8px 8px 0 0;
+  transition:color .15s ease, border-color .15s ease, background .15s ease;
+}
+.pagenav button:hover{color:var(--black); background:var(--gray-bg2);}
+.pagenav button.active{color:var(--red); border-bottom-color:var(--red); background:var(--gray-bg2);}
+
+/* ---------- Month subnav ---------- */
+.monthnav-wrap{background:var(--white); border-bottom:1px solid var(--gray-border);}
+.monthnav{
+  max-width:1240px; margin:0 auto; padding:10px 24px; display:flex; gap:8px;
+  overflow-x:auto; -ms-overflow-style:none; scrollbar-width:none;
+}
+.monthnav::-webkit-scrollbar{display:none;}
+.monthnav button{
+  border:1px solid var(--gray-border); background:var(--white); border-radius:100px;
+  padding:7px 14px; font-family:inherit; font-size:12.5px; font-weight:700;
+  color:var(--gray-txt); cursor:pointer; white-space:nowrap; transition:all .15s ease;
+}
+.monthnav button:hover{border-color:var(--black); color:var(--black);}
+.monthnav button.active{background:var(--black); border-color:var(--black); color:var(--white);}
+.monthnav button.has-data::after{content:'●'; color:var(--green); font-size:7px; margin-left:5px; vertical-align:middle;}
+
+/* ---------- Layout ---------- */
+.page{max-width:1240px; margin:0 auto; padding:26px 24px 60px;}
+.page{display:none;}
+.page.active{display:block; animation:fadein .25s ease;}
+@keyframes fadein{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+
+.section-title{
+  font-size:12px; font-weight:800; letter-spacing:.04em; text-transform:uppercase;
+  color:var(--red); margin:34px 0 12px;
+  display:flex; align-items:center; gap:7px;
+}
+.section-title::before{content:''; width:7px; height:7px; border-radius:2px; background:var(--red); display:inline-block;}
+.section-title:first-child{margin-top:0;}
+
+/* ---------- Cards / grids ---------- */
+.grid{display:grid; gap:14px;}
+.grid-4{grid-template-columns:repeat(4, 1fr);}
+.grid-2{grid-template-columns:repeat(2, 1fr);}
+.grid-3{grid-template-columns:repeat(3, 1fr);}
+@media (max-width:900px){ .grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:repeat(1,1fr);} }
+@media (max-width:600px){ .grid-4{grid-template-columns:1fr;} .grid-2{grid-template-columns:1fr;} }
+
+.card{
+  background:var(--white); border:1px solid var(--gray-border); border-radius:var(--radius);
+  padding:18px 20px; box-shadow:var(--shadow-sm);
+  transition:box-shadow .18s ease, transform .18s ease;
+}
+.card:hover{box-shadow:var(--shadow); transform:translateY(-1px);}
+.stat-label{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--gray-txt); margin-bottom:8px;}
+.stat-value{font-size:26px; font-weight:800; letter-spacing:-.02em;}
+.stat-sub{font-size:12px; color:var(--gray-txt); margin-top:6px; font-weight:600;}
+.delta{display:inline-flex; align-items:center; gap:3px; font-size:12px; font-weight:800; padding:2px 7px; border-radius:100px;}
+.delta.up{color:var(--green); background:var(--green-bg);}
+.delta.down{color:var(--crit); background:var(--crit-bg);}
+.delta.flat{color:var(--gray-txt); background:var(--gray-bg2);}
+
+/* ---------- Hero (Home) ---------- */
+.hero{
+  position:relative; overflow:hidden;
+  display:grid; grid-template-columns:290px 1fr; gap:22px;
+  background:var(--white); border:1px solid var(--gray-border); border-radius:22px;
+  padding:28px; box-shadow:var(--shadow);
+}
+.hero::before{
+  content:''; position:absolute; top:-60%; right:-15%; width:520px; height:520px;
+  background:radial-gradient(circle, rgba(227,30,36,0.06) 0%, rgba(227,30,36,0) 70%);
+  pointer-events:none;
+}
+@media (max-width:800px){ .hero{grid-template-columns:1fr;} }
+.gauge-wrap{display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative;}
+.gauge-canvas-wrap{position:relative; width:270px; height:156px;}
+.gauge-center{
+  position:absolute; left:0; right:0; bottom:6px; text-align:center;
+}
+.gauge-center .pct{font-size:38px; font-weight:800; letter-spacing:-.02em;}
+.gauge-center .lbl{font-size:11px; font-weight:700; color:var(--gray-txt); text-transform:uppercase; letter-spacing:.04em; margin-top:2px;}
+.gauge-status{
+  margin-top:12px; font-size:12.5px; font-weight:800; padding:6px 14px; border-radius:100px;
+  letter-spacing:.01em;
+}
+.hero-right{display:flex; flex-direction:column; gap:16px; justify-content:center; position:relative;}
+.hero-alert{
+  border-radius:var(--radius-sm); padding:13px 16px; font-weight:700; font-size:13.5px;
+  display:flex; align-items:center; gap:10px;
+}
+.hero-mini-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+@media (max-width:520px){ .hero-mini-grid{grid-template-columns:1fr;} }
+.hero-mini{border:1px solid var(--gray-border); border-radius:var(--radius-sm); padding:12px 14px; background:var(--gray-bg);}
+.hero-mini .stat-label{margin-bottom:4px; font-size:10.5px;}
+.hero-mini .stat-value{font-size:19px;}
+
+/* ---------- Chart card ---------- */
+.chart-card{background:var(--white); border:1px solid var(--gray-border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-sm);}
+.chart-card h3{font-size:14px; font-weight:800; margin-bottom:2px;}
+.chart-card .chart-sub{font-size:12px; color:var(--gray-txt); font-weight:600; margin-bottom:14px;}
+.chart-holder{position:relative; height:280px; min-width:0;}
+.chart-holder.tall{height:340px;}
+.chart-holder canvas{max-width:100%;}
+.grid > *{min-width:0;}
+
+/* ---------- Tables ---------- */
+.table-card{background:var(--white); border:1px solid var(--gray-border); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-sm);}
+table{width:100%; border-collapse:collapse; font-size:13px;}
+thead th{
+  background:var(--black); color:var(--white); text-align:center; font-weight:700; font-size:11.5px;
+  text-transform:uppercase; letter-spacing:.02em; padding:11px 10px; position:sticky; top:0;
+}
+thead th.left{text-align:left;}
+tbody td{padding:9px 10px; text-align:center; border-bottom:1px solid var(--gray-border); font-weight:600;}
+tbody td.left{text-align:left; color:var(--gray-txt); font-weight:700;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--gray-bg);}
+tbody tr.total td{background:var(--gray-bg2); font-weight:800;}
+.table-scroll{overflow-x:auto;}
+.pill{display:inline-block; padding:2px 9px; border-radius:100px; font-size:11.5px; font-weight:800;}
+.bar-cell{position:relative;}
+.bar-track{position:relative; height:7px; border-radius:10px; background:var(--gray-bg2); overflow:hidden; margin-top:4px;}
+.bar-fill{position:absolute; left:0; top:0; bottom:0; border-radius:10px;}
+
+/* ---------- Legend / footnote ---------- */
+.legend{display:flex; flex-wrap:wrap; gap:14px; font-size:12px; color:var(--gray-txt); font-weight:600; padding:14px 4px 4px;}
+.legend span{display:inline-flex; align-items:center; gap:5px;}
+.legend .dot{width:8px; height:8px; border-radius:50%; display:inline-block;}
+.footnote{font-size:11.5px; color:var(--gray-txt2); text-align:center; margin-top:26px; font-weight:600;}
+
+/* ---------- Empty / loading ---------- */
+.loading-wrap{display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 20px; color:var(--gray-txt);}
+.spinner{width:34px; height:34px; border-radius:50%; border:3px solid var(--gray-border); border-top-color:var(--red); animation:spin .8s linear infinite; margin-bottom:14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.error-box{
+  background:var(--crit-bg); color:var(--crit); border-radius:var(--radius-sm); padding:16px 18px;
+  font-weight:700; font-size:13.5px; margin-bottom:18px;
+}
+
+/* Focus visibility */
+button:focus-visible{outline:2px solid var(--red); outline-offset:2px;}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important; transition-duration:.001ms !important;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-accent"></div>
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <img id="logoImg" alt="Moutinho">
+      <div class="topbar-title">
+        <b>Painel de Compras</b>
+        <span>Moutinho Materiais para Construção</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="badge-live"><span class="dot"></span>Dados ao vivo</span>
+    </div>
+  </div>
+  <div class="pagenav">
+    <button data-page="home" class="active">Visão do Mês</button>
+    <button data-page="historico">Histórico</button>
+    <button data-page="detalhe">Detalhe Diário</button>
+  </div>
+</div>
+
+<div class="monthnav-wrap" id="monthNavWrap">
+  <div class="monthnav" id="monthNav"></div>
+</div>
+
+<!-- ================= HOME ================= -->
+<div class="page active" id="page-home">
+  <div id="home-content"></div>
+</div>
+
+<!-- ================= HISTORICO ================= -->
+<div class="page" id="page-historico">
+  <div id="historico-content"></div>
+</div>
+
+<!-- ================= DETALHE ================= -->
+<div class="page" id="page-detalhe">
+  <div id="detalhe-content"></div>
+</div>
+
+<script id="logo-b64" type="application/text">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</script>
+<script>
+/* =========================================================================
+   PAINEL DE COMPRAS — MOUTINHO
+   Fonte de dados: 19 abas mensais publicadas como CSV (Google Sheets)
+   ========================================================================= */
+
+// ---- Logo (base64, embutido no HTML) --------------------------------------
+document.getElementById('logoImg').src = 'data:image/png;base64,' + document.getElementById('logo-b64').textContent.trim();
+
+// ---- Configuração dos meses (ordem cronológica) ----------------------------
+const MONTHS = [
+  {key:"jun26", label:"Jun/26", month:6,  year:2026, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=931839392&single=true&output=csv"},
+  {key:"jul26", label:"Jul/26", month:7,  year:2026, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=1746772299&single=true&output=csv"},
+  {key:"ago26", label:"Ago/26", month:8,  year:2026, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=528612269&single=true&output=csv"},
+  {key:"set26", label:"Set/26", month:9,  year:2026, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=1451530975&single=true&output=csv"},
+  {key:"out26", label:"Out/26", month:10, year:2026, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=1981929829&single=true&output=csv"},
+  {key:"nov26", label:"Nov/26", month:11, year:2026, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=1430795208&single=true&output=csv"},
+  {key:"dez26", label:"Dez/26", month:12, year:2026, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=524260694&single=true&output=csv"},
+  {key:"jan27", label:"Jan/27", month:1,  year:2027, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=636796683&single=true&output=csv"},
+  {key:"fev27", label:"Fev/27", month:2,  year:2027, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=1250630617&single=true&output=csv"},
+  {key:"mar27", label:"Mar/27", month:3,  year:2027, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=1027778597&single=true&output=csv"},
+  {key:"abr27", label:"Abr/27", month:4,  year:2027, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=1598969078&single=true&output=csv"},
+  {key:"mai27", label:"Mai/27", month:5,  year:2027, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=2085602348&single=true&output=csv"},
+  {key:"jun27", label:"Jun/27", month:6,  year:2027, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=1054011378&single=true&output=csv"},
+  {key:"jul27", label:"Jul/27", month:7,  year:2027, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=555353442&single=true&output=csv"},
+  {key:"ago27", label:"Ago/27", month:8,  year:2027, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=1250132304&single=true&output=csv"},
+  {key:"set27", label:"Set/27", month:9,  year:2027, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=1006221027&single=true&output=csv"},
+  {key:"out27", label:"Out/27", month:10, year:2027, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=1041752695&single=true&output=csv"},
+  {key:"nov27", label:"Nov/27", month:11, year:2027, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=978943646&single=true&output=csv"},
+  {key:"dez27", label:"Dez/27", month:12, year:2027, url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTEwtkPOkT3MmFEGN0fJ41Hv9uirGAfxwsdxdyl230nTM80eKH39qL0U4vthhthojxJYrTpea9R7Hsu/pub?gid=904521665&single=true&output=csv"},
+];
+
+const MONTH_NAME_PT = ["","Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+
+const COLORS = {
+  red:"#E31E24", black:"#0A0A0A",
+  grayBg:"#F7F7F8", grayBg2:"#F0F0F2", grayBorder:"#E7E7EA", grayTxt:"#8A8A8E", grayTxt2:"#ABABB2",
+  white:"#FFFFFF",
+  green:"#1FAA59", greenBg:"#E9F8EF",
+  blue:"#2E7DD1", blueBg:"#EAF3FC",
+  amber:"#C9911A", amberBg:"#FDF3DD",
+  orange:"#D9711F", orangeBg:"#FCEBDD",
+  crit:"#D93A3A", critBg:"#FCE8E8",
+};
+
+// ---- Utilitários de formatação --------------------------------------------
+function brNumber(str){
+  if (str === null || str === undefined) return 0;
+  let s = String(str).trim();
+  if (s === "") return 0;
+  s = s.replace(/R\$/g,"").replace(/%/g,"").trim();
+  // remove thousand separators (.) then swap decimal comma for dot
+  s = s.replace(/\./g,"").replace(/,/g,".");
+  const v = parseFloat(s);
+  return isNaN(v) ? 0 : v;
+}
+function fmtBRL(v){
+  return (v||0).toLocaleString('pt-BR', {style:'currency', currency:'BRL', maximumFractionDigits:0});
+}
+function fmtBRLcents(v){
+  return (v||0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+}
+function fmtPct(v, digits=1){
+  return (v*100).toLocaleString('pt-BR', {minimumFractionDigits:digits, maximumFractionDigits:digits}) + '%';
+}
+function fmtNum(v, digits=0){
+  return (v||0).toLocaleString('pt-BR', {minimumFractionDigits:digits, maximumFractionDigits:digits});
+}
+
+// ---- Tiers semânticos (mesmos 5 níveis da planilha) ------------------------
+function tierFor(pct){
+  if (pct >= 1)    return {name:"critico", color:COLORS.crit,   bg:COLORS.critBg,   label:"Ultrapassado"};
+  if (pct >= 0.9)  return {name:"laranja", color:COLORS.orange, bg:COLORS.orangeBg, label:"Quase no limite"};
+  if (pct >= 0.8)  return {name:"amber",   color:COLORS.amber,  bg:COLORS.amberBg,  label:"Atenção"};
+  if (pct >= 0.6)  return {name:"azul",    color:COLORS.blue,   bg:COLORS.blueBg,   label:"Controlado"};
+  return               {name:"verde",   color:COLORS.green,  bg:COLORS.greenBg,  label:"Tranquilo"};
+}
+
+// ---- Fetch com fallback de CORS em 3 camadas -------------------------------
+async function fetchWithFallback(url){
+  const attempts = [
+    {name:'direto', u: url},
+    {name:'corsproxy.io', u: 'https://corsproxy.io/?url=' + encodeURIComponent(url)},
+    {name:'codetabs', u: 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)},
+    {name:'allorigins', u: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)},
+  ];
+  let lastErr = null;
+  for (const attempt of attempts){
+    try{
+      const res = await fetch(attempt.u, {cache:"no-store"});
+      if (!res.ok) { lastErr = new Error(attempt.name+': HTTP '+res.status); continue; }
+      const text = await res.text();
+      if (text && text.length > 20 && !text.trim().startsWith('<')) return text;
+      lastErr = new Error(attempt.name+': resposta vazia ou inválida');
+    }catch(e){
+      lastErr = new Error(attempt.name+': '+(e && e.message ? e.message : e));
+    }
+  }
+  throw lastErr || new Error('Falha ao buscar '+url);
+}
+
+// ---- Parser de uma aba mensal (layout fixo, ver planilha mestra) ----------
+function parseMonthCSV(text){
+  const parsed = Papa.parse(text, {skipEmptyLines:false}).data;
+  const row = (i) => parsed[i] || [];
+
+  const cota      = brNumber(row(5)[0]);
+  const comprado  = brNumber(row(5)[2]);
+  const disponivel= brNumber(row(5)[4]);
+  const utilizado = brNumber(row(5)[6]) / 100;
+  const alerta    = (row(7)[0] || "").trim();
+
+  const pedidos     = brNumber(row(10)[0]);
+  const mediaDiaria = brNumber(row(10)[2]);
+  const maiorVolume = brNumber(row(10)[4]);
+  const diasUteis   = brNumber(row(10)[6]);
+
+  const dias = [];
+  let i = 14;
+  while (parsed[i] && !String(parsed[i][0]||"").toUpperCase().startsWith("TOTAL")){
+    const r = parsed[i];
+    if ((r[0]||"").toString().trim() !== ""){
+      dias.push({
+        data: (r[0]||"").trim(),
+        valorComprado: brNumber(r[1]),
+        temValor: (r[1]||"").toString().trim() !== "",
+        acumulado: brNumber(r[2]),
+        pctCota: brNumber(r[3])/100,
+        nPedidos: brNumber(r[6]),
+        temPedido: (r[6]||"").toString().trim() !== "",
+        pedidosAcumulado: brNumber(r[7]),
+      });
+    }
+    i++;
+  }
+
+  return {cota, comprado, disponivel, utilizado, alerta, pedidos, mediaDiaria, maiorVolume, diasUteis, dias};
+}
+
+// ---- Estado global -----------------------------------------------------
+const STATE = {
+  data: {},        // key -> parsed object | null (erro) | undefined (não carregado)
+  loaded: false,
+  currentPage: 'home',
+  currentMonthKey: null,
+};
+
+function monthHasData(d){
+  return !!d && (d.comprado > 0 || d.pedidos > 0 || d.cota > 0);
+}
+
+function currentRealMonthKey(){
+  // tenta achar o mês "atual" com base na data real do navegador; senão cai no último mês com dado; senão o primeiro
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth()+1;
+  const exact = MONTHS.find(mm => mm.year===y && mm.month===m);
+  if (exact && monthHasData(STATE.data[exact.key])) return exact.key;
+  for (let i = MONTHS.length-1; i>=0; i--){
+    if (monthHasData(STATE.data[MONTHS[i].key])) return MONTHS[i].key;
+  }
+  return MONTHS[0].key;
+}
+
+/* =========================================================================
+   CARREGAMENTO
+   ========================================================================= */
+async function loadAllMonths(){
+  const results = await Promise.all(MONTHS.map(async (m) => {
+    try{
+      const text = await fetchWithFallback(m.url);
+      return {key:m.key, data: parseMonthCSV(text), error:null};
+    }catch(e){
+      return {key:m.key, data:null, error: (e && e.message) || 'Erro desconhecido'};
+    }
+  }));
+  results.forEach(r => { STATE.data[r.key] = r.data; });
+  STATE.errors = results.filter(r => r.error).map(r => r.key);
+  STATE.loaded = true;
+}
+
+/* =========================================================================
+   NAVEGAÇÃO
+   ========================================================================= */
+function buildMonthNav(){
+  const nav = document.getElementById('monthNav');
+  nav.innerHTML = '';
+  MONTHS.forEach(m => {
+    const btn = document.createElement('button');
+    btn.textContent = m.label;
+    btn.dataset.key = m.key;
+    if (monthHasData(STATE.data[m.key])) btn.classList.add('has-data');
+    if (m.key === STATE.currentMonthKey) btn.classList.add('active');
+    btn.addEventListener('click', () => {
+      STATE.currentMonthKey = m.key;
+      renderCurrentPage();
+      buildMonthNav();
+    });
+    nav.appendChild(btn);
+  });
+  // auto-scroll to active (calculado manualmente, restrito à própria nav — evita rolar a página inteira)
+  const activeBtn = nav.querySelector('button.active');
+  if (activeBtn){
+    const target = activeBtn.offsetLeft - (nav.clientWidth/2) + (activeBtn.clientWidth/2);
+    nav.scrollTo({left: Math.max(0,target), behavior:'smooth'});
+  }
+}
+
+document.querySelectorAll('.pagenav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.pagenav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const pageId = 'page-' + btn.dataset.page;
+    document.getElementById(pageId).classList.add('active');
+    STATE.currentPage = btn.dataset.page;
+    const monthNavWrap = document.getElementById('monthNavWrap');
+    monthNavWrap.style.display = (btn.dataset.page === 'historico') ? 'none' : '';
+    renderCurrentPage();
+  });
+});
+
+function renderCurrentPage(){
+  if (STATE.currentPage === 'home') renderHome();
+  else if (STATE.currentPage === 'historico') renderHistorico();
+  else if (STATE.currentPage === 'detalhe') renderDetalhe();
+}
+
+/* =========================================================================
+   PÁGINA: VISÃO DO MÊS (HOME)
+   ========================================================================= */
+let gaugeChartInstance = null;
+let sparkChartInstance = null;
+
+function monthMeta(key){ return MONTHS.find(m => m.key === key); }
+function prevMonthKey(key){
+  const idx = MONTHS.findIndex(m => m.key === key);
+  return idx > 0 ? MONTHS[idx-1].key : null;
+}
+
+function deltaBadge(curr, prev){
+  if (prev === null || prev === undefined || prev === 0){
+    return `<span class="delta flat">— vs mês ant.</span>`;
+  }
+  const diff = ((curr - prev) / Math.abs(prev)) * 100;
+  if (Math.abs(diff) < 0.5) return `<span class="delta flat">≈ estável vs mês ant.</span>`;
+  const up = diff > 0;
+  const arrow = up ? '▲' : '▼';
+  return `<span class="delta ${up?'up':'down'}">${arrow} ${Math.abs(diff).toFixed(0)}% vs mês ant.</span>`;
+}
+
+function renderHome(){
+  const host = document.getElementById('home-content');
+  const key = STATE.currentMonthKey;
+  const meta = monthMeta(key);
+  const d = STATE.data[key];
+
+  if (!d){
+    host.innerHTML = `<div class="error-box">Não foi possível carregar os dados de ${meta.label}. Verifique a conexão e tente novamente.</div>`;
+    return;
+  }
+
+  const tier = tierFor(d.utilizado);
+  const pctDisplay = Math.min(d.utilizado, 1.5);
+  const hasCota = d.cota > 0;
+
+  const prevKey = prevMonthKey(key);
+  const prevD = prevKey ? STATE.data[prevKey] : null;
+
+  host.innerHTML = `
+    <div class="hero">
+      <div class="gauge-wrap">
+        <div class="gauge-canvas-wrap">
+          <canvas id="gaugeCanvas"></canvas>
+          <div class="gauge-center">
+            <div class="pct" style="color:${hasCota?tier.color:COLORS.grayTxt}">${hasCota ? fmtPct(d.utilizado,1) : '—'}</div>
+            <div class="lbl">da cota utilizada</div>
+          </div>
+        </div>
+        <div class="gauge-status" style="color:${hasCota?tier.color:COLORS.grayTxt}; background:${hasCota?tier.bg:COLORS.grayBg2}">
+          ${hasCota ? tier.label : 'Aguardando cota do mês'}
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-alert" style="background:${hasCota?tier.bg:COLORS.grayBg2}; color:${hasCota?tier.color:COLORS.grayTxt}">
+          ${d.alerta || 'Sem alerta disponível.'}
+        </div>
+        <div class="hero-mini-grid">
+          <div class="hero-mini">
+            <div class="stat-label">Cota do mês</div>
+            <div class="stat-value">${hasCota ? fmtBRL(d.cota) : '—'}</div>
+          </div>
+          <div class="hero-mini">
+            <div class="stat-label">Comprado</div>
+            <div class="stat-value">${fmtBRL(d.comprado)}</div>
+            ${prevD ? deltaBadge(d.comprado, prevD.comprado) : ''}
+          </div>
+          <div class="hero-mini">
+            <div class="stat-label">Disponível</div>
+            <div class="stat-value" style="${d.disponivel<0?'color:'+COLORS.crit:''}">${fmtBRL(d.disponivel)}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Pedidos de compra — ${MONTH_NAME_PT[meta.month]} de ${meta.year}</div>
+    <div class="grid grid-4">
+      <div class="card">
+        <div class="stat-label">Pedidos no mês</div>
+        <div class="stat-value">${fmtNum(d.pedidos)}</div>
+        ${prevD ? deltaBadge(d.pedidos, prevD.pedidos) : ''}
+      </div>
+      <div class="card">
+        <div class="stat-label">Média diária</div>
+        <div class="stat-value">${fmtNum(d.mediaDiaria,1)}</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Maior volume diário</div>
+        <div class="stat-value">${fmtNum(d.maiorVolume)}</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Dias úteis no mês</div>
+        <div class="stat-value" style="color:${COLORS.grayTxt}">${fmtNum(d.diasUteis)}</div>
+      </div>
+    </div>
+
+    <div class="section-title">Evolução das compras no mês</div>
+    <div class="chart-card">
+      <h3>Comprado acumulado — dia a dia</h3>
+      <div class="chart-sub">${MONTH_NAME_PT[meta.month]} de ${meta.year} · linha tracejada indica a cota do mês</div>
+      <div class="chart-holder"><canvas id="sparkCanvas"></canvas></div>
+    </div>
+  `;
+
+  drawGauge(pctDisplay, tier, hasCota);
+  drawMonthSpark(d);
+}
+
+function drawGauge(pctDisplay, tier, hasCota){
+  const ctx = document.getElementById('gaugeCanvas').getContext('2d');
+  if (gaugeChartInstance) gaugeChartInstance.destroy();
+  const value = hasCota ? Math.min(pctDisplay,1) : 0;
+  const remaining = 1 - value;
+  gaugeChartInstance = new Chart(ctx, {
+    type:'doughnut',
+    data:{
+      datasets:[{
+        data:[value, remaining],
+        backgroundColor:[hasCota?tier.color:COLORS.grayBorder, COLORS.grayBg2],
+        borderWidth:0,
+        circumference:180,
+        rotation:-90,
+        cutout:'75%',
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, resizeDelay:150,
+      plugins:{legend:{display:false}, tooltip:{enabled:false}},
+      animation:{duration:700, easing:'easeOutCubic'},
+    }
+  });
+}
+
+function drawMonthSpark(d){
+  const ctx = document.getElementById('sparkCanvas').getContext('2d');
+  if (sparkChartInstance) sparkChartInstance.destroy();
+  const labels = d.dias.map(x => x.data);
+  const acumulado = d.dias.map(x => x.acumulado);
+  const cotaLine = d.dias.map(() => d.cota > 0 ? d.cota : null);
+  const maxVal = Math.max(d.cota||0, ...acumulado, 1000);
+
+  sparkChartInstance = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {
+          label:'Comprado acumulado',
+          data:acumulado,
+          borderColor:COLORS.red,
+          backgroundColor:'rgba(227,30,36,0.08)',
+          fill:true, tension:.3, pointRadius:0, borderWidth:2.5,
+        },
+        {
+          label:'Cota do mês',
+          data:cotaLine,
+          borderColor:COLORS.grayTxt2,
+          borderDash:[6,5],
+          pointRadius:0, borderWidth:1.5, fill:false,
+        }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, resizeDelay:150,
+      interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{display:true, position:'top', align:'end', labels:{boxWidth:10, boxHeight:10, usePointStyle:true, font:{family:'Manrope', size:11, weight:700}}},
+        tooltip:{callbacks:{label:(c)=> c.dataset.label+': '+fmtBRL(c.parsed.y)}}
+      },
+      scales:{
+        y:{beginAtZero:true, suggestedMax:maxVal*1.1, ticks:{callback:(v)=>fmtBRL(v), font:{family:'Manrope', size:10.5}}, grid:{color:COLORS.grayBorder}},
+        x:{ticks:{font:{family:'Manrope', size:10.5}, maxRotation:0, autoSkip:true, maxTicksLimit:10}, grid:{display:false}}
+      }
+    }
+  });
+}
+
+/* =========================================================================
+   PÁGINA: HISTÓRICO
+   ========================================================================= */
+let histBarInstance = null;
+let histCompareInstance = null;
+
+function renderHistorico(){
+  const host = document.getElementById('historico-content');
+  const rows = MONTHS.map(m => ({meta:m, d: STATE.data[m.key]})).filter(r => r.d);
+
+  const totalCota = rows.reduce((s,r)=>s+r.d.cota,0);
+  const totalComprado = rows.reduce((s,r)=>s+r.d.comprado,0);
+  const totalPedidos = rows.reduce((s,r)=>s+r.d.pedidos,0);
+  const pctMedio = totalCota>0 ? totalComprado/totalCota : 0;
+  const mesesAcima90 = rows.filter(r=>r.d.utilizado>=0.9).length;
+  const maiorMes = rows.reduce((best,r)=> (r.d.comprado>(best?.d.comprado||0)) ? r : best, null);
+
+  host.innerHTML = `
+    <div class="section-title">Visão geral do período (Jun/2026 – Dez/2027)</div>
+    <div class="grid grid-4">
+      <div class="card"><div class="stat-label">Cota total do período</div><div class="stat-value">${fmtBRL(totalCota)}</div></div>
+      <div class="card"><div class="stat-label">Total comprado</div><div class="stat-value">${fmtBRL(totalComprado)}</div></div>
+      <div class="card"><div class="stat-label">% Utilizado médio</div><div class="stat-value" style="color:${tierFor(pctMedio).color}">${fmtPct(pctMedio)}</div></div>
+      <div class="card"><div class="stat-label">Total de pedidos</div><div class="stat-value">${fmtNum(totalPedidos)}</div></div>
+    </div>
+
+    <div class="section-title">Evolução mensal</div>
+    <div class="chart-card">
+      <h3>Comprado vs Cota — todos os meses</h3>
+      <div class="chart-sub">Barras: valor comprado · Linha: cota definida no mês</div>
+      <div class="chart-holder tall"><canvas id="histBarCanvas"></canvas></div>
+    </div>
+
+    <div class="section-title">Comparativo 2026 x 2027</div>
+    <div class="chart-card">
+      <h3>Comprado por mês — 2026 vs 2027</h3>
+      <div class="chart-sub">Mesmo mês, dois anos, lado a lado</div>
+      <div class="chart-holder tall"><canvas id="histCompareCanvas"></canvas></div>
+    </div>
+
+    <div class="section-title">Tabela consolidada</div>
+    <div class="table-card">
+      <div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th class="left">Mês</th><th>Cota</th><th>Comprado</th><th>Disponível</th><th>% Utilizado</th><th>Pedidos</th>
+          </tr></thead>
+          <tbody>
+            ${rows.map(r => {
+              const t = tierFor(r.d.utilizado);
+              const hasCota = r.d.cota > 0;
+              return `<tr>
+                <td class="left">${r.meta.label}</td>
+                <td>${hasCota?fmtBRL(r.d.cota):'—'}</td>
+                <td>${fmtBRL(r.d.comprado)}</td>
+                <td style="${r.d.disponivel<0?'color:'+COLORS.crit+';font-weight:800':''}">${hasCota?fmtBRL(r.d.disponivel):'—'}</td>
+                <td>
+                  <span class="pill" style="color:${hasCota?t.color:COLORS.grayTxt}; background:${hasCota?t.bg:COLORS.grayBg2}">${hasCota?fmtPct(r.d.utilizado):'—'}</span>
+                </td>
+                <td>${fmtNum(r.d.pedidos)}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    ${maiorMes ? `<div class="footnote">Mês de maior compra no período: <b style="color:${COLORS.black}">${maiorMes.meta.label}</b> (${fmtBRL(maiorMes.d.comprado)}) · ${mesesAcima90} mês(es) acima de 90% da cota</div>` : ''}
+  `;
+
+  drawHistBar(rows);
+  drawHistCompare(rows);
+}
+
+function drawHistBar(rows){
+  const ctx = document.getElementById('histBarCanvas').getContext('2d');
+  if (histBarInstance) histBarInstance.destroy();
+  histBarInstance = new Chart(ctx, {
+    data:{
+      labels: rows.map(r=>r.meta.label),
+      datasets:[
+        {
+          type:'bar', label:'Comprado',
+          data: rows.map(r=>r.d.comprado),
+          backgroundColor: rows.map(r => tierFor(r.d.utilizado).color),
+          borderRadius:5, maxBarThickness:34,
+        },
+        {
+          type:'line', label:'Cota',
+          data: rows.map(r=> r.d.cota>0 ? r.d.cota : null),
+          borderColor: COLORS.black, borderDash:[5,4], pointRadius:0, borderWidth:1.6, fill:false, spanGaps:true,
+        }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, resizeDelay:150,
+      plugins:{
+        legend:{display:true, position:'top', align:'end', labels:{boxWidth:10, boxHeight:10, usePointStyle:true, font:{family:'Manrope', size:11, weight:700}}},
+        tooltip:{callbacks:{label:(c)=> c.dataset.label+': '+fmtBRL(c.parsed.y)}}
+      },
+      scales:{
+        y:{ticks:{callback:(v)=>fmtBRL(v), font:{family:'Manrope', size:10.5}}, grid:{color:COLORS.grayBorder}},
+        x:{ticks:{font:{family:'Manrope', size:10.5}}, grid:{display:false}}
+      }
+    }
+  });
+}
+
+function drawHistCompare(rows){
+  const ctx = document.getElementById('histCompareCanvas').getContext('2d');
+  if (histCompareInstance) histCompareInstance.destroy();
+  const byMonth = {};
+  rows.forEach(r => {
+    byMonth[r.meta.month] = byMonth[r.meta.month] || {};
+    byMonth[r.meta.month][r.meta.year] = r.d.comprado;
+  });
+  const labels = MONTH_NAME_PT.slice(1).map((n,i)=>n.slice(0,3));
+  const y2026 = [];
+  const y2027 = [];
+  for (let m=1; m<=12; m++){
+    y2026.push(byMonth[m] && byMonth[m][2026] !== undefined ? byMonth[m][2026] : null);
+    y2027.push(byMonth[m] && byMonth[m][2027] !== undefined ? byMonth[m][2027] : null);
+  }
+  histCompareInstance = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'2026', data:y2026, backgroundColor:COLORS.grayTxt2, borderRadius:5, maxBarThickness:20},
+        {label:'2027', data:y2027, backgroundColor:COLORS.red, borderRadius:5, maxBarThickness:20},
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, resizeDelay:150,
+      plugins:{
+        legend:{display:true, position:'top', align:'end', labels:{boxWidth:10, boxHeight:10, usePointStyle:true, font:{family:'Manrope', size:11, weight:700}}},
+        tooltip:{callbacks:{label:(c)=> c.dataset.label+': '+fmtBRL(c.parsed.y)}}
+      },
+      scales:{
+        y:{ticks:{callback:(v)=>fmtBRL(v), font:{family:'Manrope', size:10.5}}, grid:{color:COLORS.grayBorder}},
+        x:{ticks:{font:{family:'Manrope', size:10.5}}, grid:{display:false}}
+      }
+    }
+  });
+}
+
+/* =========================================================================
+   PÁGINA: DETALHE DIÁRIO
+   ========================================================================= */
+function renderDetalhe(){
+  const host = document.getElementById('detalhe-content');
+  const key = STATE.currentMonthKey;
+  const meta = monthMeta(key);
+  const d = STATE.data[key];
+
+  if (!d){
+    host.innerHTML = `<div class="error-box">Não foi possível carregar os dados de ${meta.label}.</div>`;
+    return;
+  }
+
+  const maxValor = Math.max(1, ...d.dias.map(x=>x.valorComprado));
+  const maxPedidos = Math.max(1, ...d.dias.map(x=>x.nPedidos));
+
+  host.innerHTML = `
+    <div class="section-title">Detalhe diário — ${MONTH_NAME_PT[meta.month]} de ${meta.year}</div>
+    <div class="table-card">
+      <div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th class="left">Data</th><th>Valor Comprado</th><th>Acumulado</th><th>% da Cota</th><th>Nº Pedidos</th><th>Acumulado Pedidos</th>
+          </tr></thead>
+          <tbody>
+            ${d.dias.map(x => {
+              const t = tierFor(x.pctCota);
+              const showTier = d.cota > 0 && x.temValor;
+              return `<tr>
+                <td class="left">${x.data}</td>
+                <td>
+                  ${x.temValor ? fmtBRL(x.valorComprado) : '<span style="color:'+COLORS.grayTxt2+'">—</span>'}
+                  ${x.temValor ? `<div class="bar-track"><div class="bar-fill" style="width:${(x.valorComprado/maxValor*100).toFixed(0)}%; background:${COLORS.red}"></div></div>` : ''}
+                </td>
+                <td>${fmtBRL(x.acumulado)}</td>
+                <td><span class="pill" style="color:${showTier?t.color:COLORS.grayTxt}; background:${showTier?t.bg:COLORS.grayBg2}">${d.cota>0?fmtPct(x.pctCota):'—'}</span></td>
+                <td>
+                  ${x.temPedido ? fmtNum(x.nPedidos) : '<span style="color:'+COLORS.grayTxt2+'">—</span>'}
+                  ${x.temPedido ? `<div class="bar-track"><div class="bar-fill" style="width:${(x.nPedidos/maxPedidos*100).toFixed(0)}%; background:${COLORS.blue}"></div></div>` : ''}
+                </td>
+                <td>${fmtNum(x.pedidosAcumulado)}</td>
+              </tr>`;
+            }).join('')}
+            <tr class="total">
+              <td class="left">TOTAL DO MÊS</td>
+              <td>${fmtBRL(d.comprado)}</td>
+              <td>${fmtBRL(d.comprado)}</td>
+              <td>${d.cota>0?fmtPct(d.utilizado):'—'}</td>
+              <td>${fmtNum(d.pedidos)}</td>
+              <td>${fmtNum(d.pedidos)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="legend">
+      <span><span class="dot" style="background:${COLORS.green}"></span>&lt;60% Tranquilo</span>
+      <span><span class="dot" style="background:${COLORS.blue}"></span>60-80% Controlado</span>
+      <span><span class="dot" style="background:${COLORS.amber}"></span>80-90% Atenção</span>
+      <span><span class="dot" style="background:${COLORS.orange}"></span>90-100% Quase no limite</span>
+      <span><span class="dot" style="background:${COLORS.crit}"></span>≥100% Ultrapassado</span>
+    </div>
+  `;
+}
+
+/* =========================================================================
+   INICIALIZAÇÃO
+   ========================================================================= */
+async function init(){
+  const homeHost = document.getElementById('home-content');
+  homeHost.innerHTML = `<div class="loading-wrap"><div class="spinner"></div>Carregando dados da planilha...</div>`;
+
+  await loadAllMonths();
+
+  STATE.currentMonthKey = currentRealMonthKey();
+  buildMonthNav();
+
+  const allFailed = STATE.errors && STATE.errors.length === MONTHS.length;
+  if (allFailed){
+    homeHost.innerHTML = `
+      <div class="error-box">
+        Não foi possível carregar nenhum mês da planilha agora. Isso costuma acontecer ao pré-visualizar o
+        arquivo fora do navegador real (ex: dentro de um preview em sandbox) — nesses casos a conexão com o
+        Google Sheets fica bloqueada. Abra o link publicado (GitHub Pages) em uma aba normal do navegador para testar de verdade.
+        <div style="margin-top:10px;">
+          <button onclick="location.reload()" style="background:${COLORS.crit}; color:#fff; border:none; padding:8px 16px; border-radius:8px; font-weight:700; font-family:inherit; cursor:pointer;">Tentar novamente</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (STATE.errors && STATE.errors.length){
+    console.warn(`Falha ao carregar ${STATE.errors.length} de ${MONTHS.length} mês(es):`, STATE.errors.join(', '));
+  }
+
+  renderCurrentPage();
+}
+
+init();
+
+</script>
+</body>
+</html>
