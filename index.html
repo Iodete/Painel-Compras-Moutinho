@@ -37,20 +37,27 @@ body{
 ::-webkit-scrollbar-thumb{background:var(--gray-border); border-radius:10px;}
 
 /* ---------- App shell (sidebar layout) ---------- */
-.app-shell{display:flex; min-height:100vh;}
+.app-shell{display:block; min-height:100vh;}
 .sidebar{
-  width:236px; flex:0 0 236px; min-height:100vh; position:sticky; top:0; align-self:flex-start;
-  background:linear-gradient(165deg, #150505 0%, #0A0A0A 55%, #1a0808 100%);
-  display:flex; flex-direction:column; padding:22px 16px; gap:28px;
-  box-shadow:2px 0 24px rgba(0,0,0,.12);
+  width:236px; position:fixed; top:0; left:0; bottom:0; height:100vh; z-index:60;
+  background:linear-gradient(165deg, #170606 0%, #0A0A0A 50%, #1c0909 100%);
+  display:flex; flex-direction:column; padding:22px 16px; gap:26px;
+  box-shadow:2px 0 24px rgba(0,0,0,.14);
+  overflow-y:auto;
 }
-.sidebar-logo{display:flex; align-items:center; gap:11px; padding:6px 6px 14px; border-bottom:1px solid rgba(255,255,255,.08);}
-.sidebar-logo img{height:44px; border-radius:8px; display:block;}
+.sidebar::before{
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg, var(--red), #ff5257, var(--red));
+}
+.sidebar-logo{display:flex; align-items:center; gap:11px; padding:4px 4px 16px; border-bottom:1px solid rgba(255,255,255,.09);}
+.sidebar-logo img{height:42px; width:42px; object-fit:cover; border-radius:9px; display:block; box-shadow:0 0 0 1px rgba(255,255,255,.12), 0 4px 14px rgba(227,30,36,.18);}
 .sidebar-logo-text b{
-  display:block; color:var(--white); font-size:16px; font-weight:800; letter-spacing:-.01em; line-height:1.2;
-  background:linear-gradient(90deg, #fff 0%, #ffb3b3 100%); -webkit-background-clip:text; background-clip:text; color:transparent;
+  display:block; color:var(--white); font-size:17px; font-weight:800; letter-spacing:-.01em; line-height:1.2;
 }
-.sidebar-logo-text span{display:block; color:rgba(255,255,255,.45); font-size:10.5px; font-weight:600; margin-top:2px;}
+.sidebar-logo-text span{
+  display:block; color:rgba(255,255,255,.5); font-size:9.5px; font-weight:800; margin-top:3px;
+  text-transform:uppercase; letter-spacing:.08em;
+}
 .sidebar-nav{display:flex; flex-direction:column; gap:4px;}
 .sidebar-nav button{
   display:flex; align-items:center; gap:12px; text-align:left;
@@ -61,7 +68,7 @@ body{
 .sidebar-nav button svg{width:19px; height:19px; flex:0 0 19px; opacity:.85;}
 .sidebar-nav button:hover{background:rgba(255,255,255,.06); color:var(--white);}
 .sidebar-nav button.active{
-  background:linear-gradient(90deg, rgba(227,30,36,.22) 0%, rgba(227,30,36,.06) 100%);
+  background:linear-gradient(90deg, rgba(227,30,36,.24) 0%, rgba(227,30,36,.05) 100%);
   color:var(--white);
 }
 .sidebar-nav button.active svg{opacity:1; color:#ff5257;}
@@ -69,15 +76,15 @@ body{
   content:''; position:absolute; left:-16px; top:8px; bottom:8px; width:4px; border-radius:0 4px 4px 0;
   background:linear-gradient(180deg, var(--red), #ff5257);
 }
-.sidebar-foot{margin-top:auto; padding-top:14px; border-top:1px solid rgba(255,255,255,.08);}
-.sidebar-foot .badge-live{
-  display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700;
-  color:#7CF0A8; background:rgba(31,170,89,.15); padding:5px 10px; border-radius:100px;
-}
-.sidebar-foot .badge-live .dot{width:6px; height:6px; border-radius:50%; background:#7CF0A8; animation:pulse 2s infinite;}
+.sidebar-foot{margin-top:auto; padding-top:16px; border-top:1px solid rgba(255,255,255,.09);}
+.sidebar-foot b{display:block; color:rgba(255,255,255,.85); font-size:12px; font-weight:800;}
+.sidebar-foot .tags{display:block; margin-top:4px; font-size:10.5px; font-weight:700;}
+.sidebar-foot .tags .e{color:#6FB3FF;}
+.sidebar-foot .tags .h{color:#ff8a8d;}
+.sidebar-foot .tags .d{color:rgba(255,255,255,.4);}
 @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.35;}}
 
-.main-area{flex:1 1 auto; min-width:0; display:flex; flex-direction:column;}
+.main-area{margin-left:236px; min-width:0; display:flex; flex-direction:column;}
 
 /* ---------- Month subnav (com setas) ---------- */
 .monthnav-wrap{background:var(--white); border-bottom:1px solid var(--gray-border); position:sticky; top:0; z-index:40;}
@@ -104,11 +111,12 @@ body{
 .monthnav button.has-data::after{content:'●'; color:var(--green); font-size:7px; margin-left:5px; vertical-align:middle;}
 
 @media (max-width:860px){
-  .app-shell{flex-direction:column;}
+  .app-shell{display:flex; flex-direction:column;}
   .sidebar{
-    width:100%; flex:0 0 auto; min-height:0; position:sticky; top:0; z-index:50;
-    flex-direction:row; align-items:center; padding:12px 14px; gap:14px;
+    width:100%; position:sticky; top:0; left:0; bottom:auto; height:auto; z-index:50;
+    flex-direction:row; align-items:center; padding:12px 14px; gap:14px; overflow-y:visible;
   }
+  .main-area{margin-left:0;}
   .sidebar-logo{border-bottom:none; padding:0; flex:0 0 auto;}
   .sidebar-logo-text span{display:none;}
   .sidebar-nav{flex-direction:row; overflow-x:auto; flex:1 1 auto; gap:4px;}
@@ -252,8 +260,8 @@ button:focus-visible{outline:2px solid var(--red); outline-offset:2px;}
     <div class="sidebar-logo">
       <img id="logoImg" alt="Moutinho">
       <div class="sidebar-logo-text">
-        <b>Painel de Compras</b>
-        <span>Moutinho Materiais</span>
+        <b>Moutinho</b>
+        <span>Painel de Compras</span>
       </div>
     </div>
     <nav class="sidebar-nav">
@@ -270,6 +278,10 @@ button:focus-visible{outline:2px solid var(--red); outline-offset:2px;}
         Detalhe Diário
       </button>
     </nav>
+    <div class="sidebar-foot">
+      <b>Moutinho Materiais</b>
+      <span class="tags"><span class="e">Elétrica</span> · <span class="h">Hidráulica</span> · <span class="d">Desde 1984</span></span>
+    </div>
   </aside>
 
   <div class="main-area">
@@ -400,16 +412,30 @@ async function fetchWithFallback(url){
   throw lastErr || new Error('Falha ao buscar '+url);
 }
 
+// ---- Mensagem de alerta (construída no navegador, sempre consistente) -----
+function buildAlertMessage(utilizado, hasLimite){
+  if (!hasLimite) return "⚪ Preencha o limite do mês para ativar os alertas.";
+  if (utilizado >= 1)   return "🔴 Limite mensal ultrapassado — ação imediata necessária.";
+  if (utilizado >= 0.9) return "🟠 Atenção: quase batendo o limite do mês.";
+  if (utilizado >= 0.8) return "🟡 Dentro do limite, mas em ritmo de atenção.";
+  if (utilizado >= 0.6) return "🔵 Ritmo de compras controlado.";
+  return "🟢 Compras tranquilas, bem abaixo do limite.";
+}
+
 // ---- Parser de uma aba mensal (layout fixo, ver planilha mestra) ----------
 function parseMonthCSV(text){
   const parsed = Papa.parse(text, {skipEmptyLines:false}).data;
   const row = (i) => parsed[i] || [];
 
-  const cota      = brNumber(row(5)[0]);
+  const limite    = brNumber(row(5)[0]);
   const comprado  = brNumber(row(5)[2]);
-  const disponivel= brNumber(row(5)[4]);
-  const utilizado = brNumber(row(5)[6]) / 100;
-  const alerta    = (row(7)[0] || "").trim();
+  const hasLimite = limite > 0;
+  // Disponível e % Utilizado são sempre recalculados no navegador (não confiamos
+  // cegamente na célula da planilha) — garante consistência mesmo se a fórmula
+  // da planilha atrasar ou o usuário editar a ordem de preenchimento.
+  const disponivel = hasLimite ? (limite - comprado) : 0;
+  const utilizado  = hasLimite ? (comprado / limite) : 0;
+  const alerta = buildAlertMessage(utilizado, hasLimite);
 
   const pedidos     = brNumber(row(10)[0]);
   const mediaDiaria = brNumber(row(10)[2]);
@@ -421,12 +447,14 @@ function parseMonthCSV(text){
   while (parsed[i] && !String(parsed[i][0]||"").toUpperCase().startsWith("TOTAL")){
     const r = parsed[i];
     if ((r[0]||"").toString().trim() !== ""){
+      const valorComprado = brNumber(r[1]);
+      const acumulado = brNumber(r[2]);
       dias.push({
         data: (r[0]||"").trim(),
-        valorComprado: brNumber(r[1]),
+        valorComprado,
         temValor: (r[1]||"").toString().trim() !== "",
-        acumulado: brNumber(r[2]),
-        pctCota: brNumber(r[3])/100,
+        acumulado,
+        pctCota: hasLimite ? (acumulado / limite) : 0,
         nPedidos: brNumber(r[6]),
         temPedido: (r[6]||"").toString().trim() !== "",
         pedidosAcumulado: brNumber(r[7]),
@@ -435,7 +463,12 @@ function parseMonthCSV(text){
     i++;
   }
 
-  return {cota, comprado, disponivel, utilizado, alerta, pedidos, mediaDiaria, maiorVolume, diasUteis, dias};
+  // Dia com maior número de pedidos (para a legenda "em tal dia")
+  let diaMaiorVolume = null;
+  let maxP = -1;
+  dias.forEach(x => { if (x.temPedido && x.nPedidos > maxP){ maxP = x.nPedidos; diaMaiorVolume = x.data; } });
+
+  return {cota:limite, comprado, disponivel, utilizado, alerta, pedidos, mediaDiaria, maiorVolume, diaMaiorVolume, diasUteis, dias};
 }
 
 // ---- Ícones (SVG inline, estilo linha, para os cards) ----------------------
@@ -465,15 +498,16 @@ function monthHasData(d){
 }
 
 function currentRealMonthKey(){
-  // tenta achar o mês "atual" com base na data real do navegador; senão cai no último mês com dado; senão o primeiro
+  // Sempre mostra o mês corrente de verdade (data do navegador), tenha dados ou não.
+  // Só cai para outro mês se a data atual estiver fora do período coberto pela planilha.
   const now = new Date();
   const y = now.getFullYear(), m = now.getMonth()+1;
   const exact = MONTHS.find(mm => mm.year===y && mm.month===m);
-  if (exact && monthHasData(STATE.data[exact.key])) return exact.key;
-  for (let i = MONTHS.length-1; i>=0; i--){
-    if (monthHasData(STATE.data[MONTHS[i].key])) return MONTHS[i].key;
-  }
-  return MONTHS[0].key;
+  if (exact) return exact.key;
+  // fora do período (ex: antes de Jun/26 ou depois de Dez/27) -> usa o mês mais próximo
+  const first = MONTHS[0], last = MONTHS[MONTHS.length-1];
+  const beforeFirst = (y < first.year) || (y===first.year && m < first.month);
+  return beforeFirst ? first.key : last.key;
 }
 
 /* =========================================================================
@@ -541,6 +575,9 @@ document.querySelectorAll('.sidebar-nav button').forEach(btn => {
     STATE.currentPage = btn.dataset.page;
     const monthNavWrap = document.getElementById('monthNavWrap');
     monthNavWrap.style.display = (btn.dataset.page === 'historico') ? 'none' : '';
+    // Ao trocar de menu, sempre volta para o mês atual (do dia de hoje)
+    STATE.currentMonthKey = currentRealMonthKey();
+    buildMonthNav();
     renderCurrentPage();
   });
 });
@@ -611,11 +648,11 @@ function renderHome(){
           <canvas id="gaugeCanvas"></canvas>
           <div class="gauge-center">
             <div class="pct" style="color:${hasCota?tier.color:COLORS.grayTxt}">${hasCota ? fmtPct(d.utilizado,1) : '—'}</div>
-            <div class="lbl">da cota utilizada</div>
+            <div class="lbl">do limite utilizado</div>
           </div>
         </div>
         <div class="gauge-status" style="color:${hasCota?tier.color:COLORS.grayTxt}; background:${hasCota?tier.bg:COLORS.grayBg2}">
-          ${hasCota ? tier.label : 'Aguardando cota do mês'}
+          ${hasCota ? tier.label : 'Aguardando limite do mês'}
         </div>
       </div>
       <div class="hero-right">
@@ -625,7 +662,7 @@ function renderHome(){
         <div class="hero-mini-grid">
           <div class="hero-mini">
             ${iconBadge('wallet', COLORS.blue, COLORS.blueBg)}
-            <div class="stat-label">Cota do mês</div>
+            <div class="stat-label">Limite do mês</div>
             <div class="stat-value">${hasCota ? fmtBRL(d.cota) : '—'}</div>
           </div>
           <div class="hero-mini">
@@ -635,9 +672,10 @@ function renderHome(){
             ${prevD ? deltaBadge(d.comprado, prevD.comprado) : ''}
           </div>
           <div class="hero-mini">
-            ${iconBadge('piggy', COLORS.green, COLORS.greenBg)}
+            ${iconBadge('piggy', d.disponivel<0?COLORS.crit:COLORS.green, d.disponivel<0?COLORS.critBg:COLORS.greenBg)}
             <div class="stat-label">Disponível</div>
             <div class="stat-value" style="${d.disponivel<0?'color:'+COLORS.crit:''}">${fmtBRL(d.disponivel)}</div>
+            ${d.disponivel<0 ? `<span class="delta down">⚠ Limite ultrapassado</span>` : ''}
           </div>
         </div>
       </div>
@@ -655,11 +693,13 @@ function renderHome(){
         ${iconBadge('clock', COLORS.amber, COLORS.amberBg)}
         <div class="stat-label">Média diária</div>
         <div class="stat-value">${fmtNum(d.mediaDiaria,1)}</div>
+        ${prevD && prevD.mediaDiaria ? `<div class="stat-sub">vs ${fmtNum(prevD.mediaDiaria,1)} no mês anterior</div>` : ''}
       </div>
       <div class="card">
         ${iconBadge('trend', COLORS.blue, COLORS.blueBg)}
         <div class="stat-label">Maior volume diário</div>
         <div class="stat-value">${fmtNum(d.maiorVolume)}</div>
+        ${d.diaMaiorVolume ? `<div class="stat-sub">• pico em ${d.diaMaiorVolume}</div>` : ''}
       </div>
       <div class="card">
         ${iconBadge('calendar', COLORS.grayTxt, COLORS.grayBg2)}
@@ -671,7 +711,7 @@ function renderHome(){
     <div class="section-title">Evolução das compras no mês</div>
     <div class="chart-card">
       <h3>Comprado acumulado — dia a dia</h3>
-      <div class="chart-sub">${MONTH_NAME_PT[meta.month]} de ${meta.year} · linha tracejada indica a cota do mês</div>
+      <div class="chart-sub">${MONTH_NAME_PT[meta.month]} de ${meta.year} · linha tracejada indica o limite do mês</div>
       <div class="chart-holder"><canvas id="sparkCanvas"></canvas></div>
     </div>
   `;
@@ -726,7 +766,7 @@ function drawMonthSpark(d){
           fill:true, tension:.3, pointRadius:0, borderWidth:2.5,
         },
         {
-          label:'Cota do mês',
+          label:'Limite do mês',
           data:cotaLine,
           borderColor:COLORS.grayTxt2,
           borderDash:[6,5],
@@ -769,7 +809,7 @@ function renderHistorico(){
   host.innerHTML = `
     <div class="section-title">Visão geral do período (Jun/2026 – Dez/2027)</div>
     <div class="grid grid-4">
-      <div class="card"><div class="stat-label">Cota total do período</div><div class="stat-value">${fmtBRL(totalCota)}</div></div>
+      <div class="card"><div class="stat-label">Limite total do período</div><div class="stat-value">${fmtBRL(totalCota)}</div></div>
       <div class="card"><div class="stat-label">Total comprado</div><div class="stat-value">${fmtBRL(totalComprado)}</div></div>
       <div class="card"><div class="stat-label">% Utilizado médio</div><div class="stat-value" style="color:${tierFor(pctMedio).color}">${fmtPct(pctMedio)}</div></div>
       <div class="card"><div class="stat-label">Total de pedidos</div><div class="stat-value">${fmtNum(totalPedidos)}</div></div>
@@ -777,8 +817,8 @@ function renderHistorico(){
 
     <div class="section-title">Evolução mensal</div>
     <div class="chart-card">
-      <h3>Comprado vs Cota — todos os meses</h3>
-      <div class="chart-sub">Barras: valor comprado · Linha: cota definida no mês</div>
+      <h3>Comprado vs Limite — todos os meses</h3>
+      <div class="chart-sub">Barras: valor comprado · Linha: limite definido no mês</div>
       <div class="chart-holder tall"><canvas id="histBarCanvas"></canvas></div>
     </div>
 
@@ -794,7 +834,7 @@ function renderHistorico(){
       <div class="table-scroll">
         <table>
           <thead><tr>
-            <th class="left">Mês</th><th>Cota</th><th>Comprado</th><th>Disponível</th><th>% Utilizado</th><th>Pedidos</th>
+            <th class="left">Mês</th><th>Limite</th><th>Comprado</th><th>Disponível</th><th>% Utilizado</th><th>Pedidos</th>
           </tr></thead>
           <tbody>
             ${rows.map(r => {
@@ -815,7 +855,7 @@ function renderHistorico(){
         </table>
       </div>
     </div>
-    ${maiorMes ? `<div class="footnote">Mês de maior compra no período: <b style="color:${COLORS.black}">${maiorMes.meta.label}</b> (${fmtBRL(maiorMes.d.comprado)}) · ${mesesAcima90} mês(es) acima de 90% da cota</div>` : ''}
+    ${maiorMes ? `<div class="footnote">Mês de maior compra no período: <b style="color:${COLORS.black}">${maiorMes.meta.label}</b> (${fmtBRL(maiorMes.d.comprado)}) · ${mesesAcima90} mês(es) acima de 90% do limite</div>` : ''}
   `;
 
   drawHistBar(rows);
@@ -836,7 +876,7 @@ function drawHistBar(rows){
           borderRadius:5, maxBarThickness:34,
         },
         {
-          type:'line', label:'Cota',
+          type:'line', label:'Limite',
           data: rows.map(r=> r.d.cota>0 ? r.d.cota : null),
           borderColor: COLORS.black, borderDash:[5,4], pointRadius:0, borderWidth:1.6, fill:false, spanGaps:true,
         }
@@ -897,6 +937,15 @@ function drawHistCompare(rows){
 /* =========================================================================
    PÁGINA: DETALHE DIÁRIO
    ========================================================================= */
+const WEEKDAY_ABBR = ["dom","seg","ter","qua","qui","sex","sáb"];
+function weekdayAbbr(dataStr, year, month){
+  const m = /^(\d+)/.exec(dataStr||"");
+  if (!m) return "";
+  const day = parseInt(m[1], 10);
+  const dt = new Date(year, month-1, day);
+  return WEEKDAY_ABBR[dt.getDay()];
+}
+
 function renderDetalhe(){
   const host = document.getElementById('detalhe-content');
   const key = STATE.currentMonthKey;
@@ -917,14 +966,14 @@ function renderDetalhe(){
       <div class="table-scroll">
         <table>
           <thead><tr>
-            <th class="left">Data</th><th>Valor Comprado</th><th>Acumulado</th><th>% da Cota</th><th>Nº Pedidos</th><th>Acumulado Pedidos</th>
+            <th class="left">Data</th><th>Valor Comprado</th><th>Acumulado</th><th>% do Limite</th><th>Nº Pedidos</th><th>Acumulado Pedidos</th>
           </tr></thead>
           <tbody>
             ${d.dias.map(x => {
               const t = tierFor(x.pctCota);
               const showTier = d.cota > 0 && x.temValor;
               return `<tr>
-                <td class="left">${x.data}</td>
+                <td class="left">${x.data} <span style="color:${COLORS.grayTxt2}; font-weight:600; text-transform:capitalize;">· ${weekdayAbbr(x.data, meta.year, meta.month)}</span></td>
                 <td>
                   ${x.temValor ? fmtBRL(x.valorComprado) : '<span style="color:'+COLORS.grayTxt2+'">—</span>'}
                   ${x.temValor ? `<div class="bar-track"><div class="bar-fill" style="width:${(x.valorComprado/maxValor*100).toFixed(0)}%; background:${COLORS.red}"></div></div>` : ''}
