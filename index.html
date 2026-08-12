@@ -685,20 +685,20 @@ function renderHome(){
     <div class="grid grid-4">
       <div class="card">
         ${iconBadge('cart', COLORS.red, '#FCE3E4')}
-        <div class="stat-label">Pedidos no mês</div>
-        <div class="stat-value">${fmtNum(d.pedidos)}</div>
+        <div class="stat-label">Valor em Pedidos (R$)</div>
+        <div class="stat-value">${fmtBRL(d.pedidos)}</div>
         ${prevD ? deltaBadge(d.pedidos, prevD.pedidos) : ''}
       </div>
       <div class="card">
         ${iconBadge('clock', COLORS.amber, COLORS.amberBg)}
         <div class="stat-label">Média diária</div>
-        <div class="stat-value">${fmtNum(d.mediaDiaria,1)}</div>
+        <div class="stat-value">${fmtBRL(d.mediaDiaria)}</div>
         ${prevD && prevD.mediaDiaria ? `<div class="stat-sub">vs ${fmtNum(prevD.mediaDiaria,1)} no mês anterior</div>` : ''}
       </div>
       <div class="card">
         ${iconBadge('trend', COLORS.blue, COLORS.blueBg)}
-        <div class="stat-label">Maior volume diário</div>
-        <div class="stat-value">${fmtNum(d.maiorVolume)}</div>
+        <div class="stat-label">Maior valor diário</div>
+        <div class="stat-value">${fmtBRL(d.maiorVolume)}</div>
         ${d.diaMaiorVolume ? `<div class="stat-sub">• pico em ${d.diaMaiorVolume}</div>` : ''}
       </div>
       <div class="card">
@@ -812,7 +812,7 @@ function renderHistorico(){
       <div class="card"><div class="stat-label">Limite total do período</div><div class="stat-value">${fmtBRL(totalCota)}</div></div>
       <div class="card"><div class="stat-label">Total comprado</div><div class="stat-value">${fmtBRL(totalComprado)}</div></div>
       <div class="card"><div class="stat-label">% Utilizado médio</div><div class="stat-value" style="color:${tierFor(pctMedio).color}">${fmtPct(pctMedio)}</div></div>
-      <div class="card"><div class="stat-label">Total de pedidos</div><div class="stat-value">${fmtNum(totalPedidos)}</div></div>
+      <div class="card"><div class="stat-label">Total em pedidos (R$)</div><div class="stat-value">${fmtBRL(totalPedidos)}</div></div>
     </div>
 
     <div class="section-title">Evolução mensal</div>
@@ -834,7 +834,7 @@ function renderHistorico(){
       <div class="table-scroll">
         <table>
           <thead><tr>
-            <th class="left">Mês</th><th>Limite</th><th>Comprado</th><th>Disponível</th><th>% Utilizado</th><th>Pedidos</th>
+            <th class="left">Mês</th><th>Limite</th><th>Comprado</th><th>Disponível</th><th>% Utilizado</th><th>Pedidos (R$)</th>
           </tr></thead>
           <tbody>
             ${rows.map(r => {
@@ -848,7 +848,7 @@ function renderHistorico(){
                 <td>
                   <span class="pill" style="color:${hasCota?t.color:COLORS.grayTxt}; background:${hasCota?t.bg:COLORS.grayBg2}">${hasCota?fmtPct(r.d.utilizado):'—'}</span>
                 </td>
-                <td>${fmtNum(r.d.pedidos)}</td>
+                <td>${fmtBRL(r.d.pedidos)}</td>
               </tr>`;
             }).join('')}
           </tbody>
@@ -966,7 +966,7 @@ function renderDetalhe(){
       <div class="table-scroll">
         <table>
           <thead><tr>
-            <th class="left">Data</th><th>Valor Comprado</th><th>Acumulado</th><th>% do Limite</th><th>Nº Pedidos</th><th>Acumulado Pedidos</th>
+            <th class="left">Data</th><th>Valor Comprado</th><th>Acumulado</th><th>% do Limite</th><th>Valor do Pedido</th><th>Acumulado Pedidos</th>
           </tr></thead>
           <tbody>
             ${d.dias.map(x => {
@@ -981,10 +981,10 @@ function renderDetalhe(){
                 <td>${fmtBRL(x.acumulado)}</td>
                 <td><span class="pill" style="color:${showTier?t.color:COLORS.grayTxt}; background:${showTier?t.bg:COLORS.grayBg2}">${d.cota>0?fmtPct(x.pctCota):'—'}</span></td>
                 <td>
-                  ${x.temPedido ? fmtNum(x.nPedidos) : '<span style="color:'+COLORS.grayTxt2+'">—</span>'}
+                  ${x.temPedido ? fmtBRL(x.nPedidos) : '<span style="color:'+COLORS.grayTxt2+'">—</span>'}
                   ${x.temPedido ? `<div class="bar-track"><div class="bar-fill" style="width:${(x.nPedidos/maxPedidos*100).toFixed(0)}%; background:${COLORS.blue}"></div></div>` : ''}
                 </td>
-                <td>${fmtNum(x.pedidosAcumulado)}</td>
+                <td>${fmtBRL(x.pedidosAcumulado)}</td>
               </tr>`;
             }).join('')}
             <tr class="total">
@@ -992,8 +992,8 @@ function renderDetalhe(){
               <td>${fmtBRL(d.comprado)}</td>
               <td>${fmtBRL(d.comprado)}</td>
               <td>${d.cota>0?fmtPct(d.utilizado):'—'}</td>
-              <td>${fmtNum(d.pedidos)}</td>
-              <td>${fmtNum(d.pedidos)}</td>
+              <td>${fmtBRL(d.pedidos)}</td>
+              <td>${fmtBRL(d.pedidos)}</td>
             </tr>
           </tbody>
         </table>
