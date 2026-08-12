@@ -667,7 +667,7 @@ function renderHome(){
           </div>
           <div class="hero-mini">
             ${iconBadge('bag', COLORS.red, '#FCE3E4')}
-            <div class="stat-label">Comprado</div>
+            <div class="stat-label">Notas de Entrada</div>
             <div class="stat-value">${fmtBRL(d.comprado)}</div>
             ${prevD ? deltaBadge(d.comprado, prevD.comprado) : ''}
           </div>
@@ -708,9 +708,9 @@ function renderHome(){
       </div>
     </div>
 
-    <div class="section-title">Evolução das compras no mês</div>
+    <div class="section-title">Evolução das notas no mês</div>
     <div class="chart-card">
-      <h3>Comprado acumulado — dia a dia</h3>
+      <h3>Notas acumuladas — dia a dia</h3>
       <div class="chart-sub">${MONTH_NAME_PT[meta.month]} de ${meta.year} · linha tracejada indica o limite do mês</div>
       <div class="chart-holder"><canvas id="sparkCanvas"></canvas></div>
     </div>
@@ -759,7 +759,7 @@ function drawMonthSpark(d){
       labels,
       datasets:[
         {
-          label:'Comprado acumulado',
+          label:'Notas acumuladas',
           data:acumulado,
           borderColor:COLORS.red,
           backgroundColor:'rgba(227,30,36,0.08)',
@@ -810,21 +810,21 @@ function renderHistorico(){
     <div class="section-title">Visão geral do período (Jun/2026 – Dez/2027)</div>
     <div class="grid grid-4">
       <div class="card"><div class="stat-label">Limite total do período</div><div class="stat-value">${fmtBRL(totalCota)}</div></div>
-      <div class="card"><div class="stat-label">Total comprado</div><div class="stat-value">${fmtBRL(totalComprado)}</div></div>
+      <div class="card"><div class="stat-label">Total em notas</div><div class="stat-value">${fmtBRL(totalComprado)}</div></div>
       <div class="card"><div class="stat-label">% Utilizado médio</div><div class="stat-value" style="color:${tierFor(pctMedio).color}">${fmtPct(pctMedio)}</div></div>
       <div class="card"><div class="stat-label">Total em pedidos (R$)</div><div class="stat-value">${fmtBRL(totalPedidos)}</div></div>
     </div>
 
     <div class="section-title">Evolução mensal</div>
     <div class="chart-card">
-      <h3>Comprado vs Limite — todos os meses</h3>
-      <div class="chart-sub">Barras: valor comprado · Linha: limite definido no mês</div>
+      <h3>Notas vs Limite — todos os meses</h3>
+      <div class="chart-sub">Barras: valor em notas · Linha: limite definido no mês</div>
       <div class="chart-holder tall"><canvas id="histBarCanvas"></canvas></div>
     </div>
 
     <div class="section-title">Comparativo 2026 x 2027</div>
     <div class="chart-card">
-      <h3>Comprado por mês — 2026 vs 2027</h3>
+      <h3>Notas por mês — 2026 vs 2027</h3>
       <div class="chart-sub">Mesmo mês, dois anos, lado a lado</div>
       <div class="chart-holder tall"><canvas id="histCompareCanvas"></canvas></div>
     </div>
@@ -834,7 +834,7 @@ function renderHistorico(){
       <div class="table-scroll">
         <table>
           <thead><tr>
-            <th class="left">Mês</th><th>Limite</th><th>Comprado</th><th>Disponível</th><th>% Utilizado</th><th>Pedidos (R$)</th>
+            <th class="left">Mês</th><th>Limite</th><th>Notas (R$)</th><th>Disponível</th><th>% Utilizado</th><th>Pedidos (R$)</th>
           </tr></thead>
           <tbody>
             ${rows.map(r => {
@@ -855,7 +855,7 @@ function renderHistorico(){
         </table>
       </div>
     </div>
-    ${maiorMes ? `<div class="footnote">Mês de maior compra no período: <b style="color:${COLORS.black}">${maiorMes.meta.label}</b> (${fmtBRL(maiorMes.d.comprado)}) · ${mesesAcima90} mês(es) acima de 90% do limite</div>` : ''}
+    ${maiorMes ? `<div class="footnote">Mês com mais notas no período: <b style="color:${COLORS.black}">${maiorMes.meta.label}</b> (${fmtBRL(maiorMes.d.comprado)}) · ${mesesAcima90} mês(es) acima de 90% do limite</div>` : ''}
   `;
 
   drawHistBar(rows);
@@ -870,7 +870,7 @@ function drawHistBar(rows){
       labels: rows.map(r=>r.meta.label),
       datasets:[
         {
-          type:'bar', label:'Comprado',
+          type:'bar', label:'Notas',
           data: rows.map(r=>r.d.comprado),
           backgroundColor: rows.map(r => tierFor(r.d.utilizado).color),
           borderRadius:5, maxBarThickness:34,
@@ -966,7 +966,7 @@ function renderDetalhe(){
       <div class="table-scroll">
         <table>
           <thead><tr>
-            <th class="left">Data</th><th>Valor Comprado</th><th>Acumulado</th><th>% do Limite</th><th>Valor do Pedido</th><th>Acumulado Pedidos</th>
+            <th class="left">Data</th><th>Total de Notas (R$)</th><th>Acumulado</th><th>% do Limite</th><th>Valor dos Pedidos (R$)</th><th>Acumulado Pedidos</th>
           </tr></thead>
           <tbody>
             ${d.dias.map(x => {
